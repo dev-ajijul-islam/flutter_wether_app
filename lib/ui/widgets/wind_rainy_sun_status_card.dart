@@ -6,7 +6,6 @@ class WindRainySunStatusCard extends StatelessWidget {
 
   const WindRainySunStatusCard({super.key, required this.hourly});
 
-  // Weather code অনুযায়ী icon return করবে
   IconData getWeatherIcon(int code) {
     if (code == 0) return Icons.sunny;
     if (code == 1 || code == 2) return Icons.cloud;
@@ -19,7 +18,7 @@ class WindRainySunStatusCard extends StatelessWidget {
     return Icons.help_outline;
   }
 
-  // Weather code অনুযায়ী description
+
   String getWeatherDesc(int code) {
     if (code == 0) return "Clear";
     if (code == 1 || code == 2) return "Partly Cloudy";
@@ -32,7 +31,7 @@ class WindRainySunStatusCard extends StatelessWidget {
     return "Unknown";
   }
 
-  // আজকের মাত্র তিনটা data নেবে
+
   List<Map<String, dynamic>> getHourlyList() {
     if (hourly == null) return [];
     final List times = hourly!['time'] ?? [];

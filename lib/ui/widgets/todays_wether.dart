@@ -23,7 +23,7 @@ class TodaysWether extends StatelessWidget {
     65: {"text": "Heavy Rain", "icon": Icons.umbrella},
     80: {"text": "Rain Showers", "icon": Icons.umbrella_outlined},
     95: {"text": "Thunderstorm", "icon": Icons.flash_on},
-    // Add more codes as needed
+
   };
 
   @override
@@ -87,7 +87,7 @@ class TodaysWether extends StatelessWidget {
               ],
             ),
             Transform.rotate(
-              angle: 4.7, // আগের মতো rotation
+              angle: 4.7,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
