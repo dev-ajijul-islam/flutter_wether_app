@@ -1,11 +1,12 @@
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:wether_app/services/wether_controller.dart';
 import 'package:wether_app/ui/widgets/blur_bg.dart';
 import 'package:wether_app/ui/widgets/high_low_card.dart';
 import 'package:wether_app/ui/widgets/todays_wether.dart';
 import 'package:wether_app/ui/widgets/wind_rainy_sun_status_card.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,70 +23,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Map<String, dynamic>? location;
   Map<String, dynamic>? forecast;
-  Map<String,dynamic>? daily;
-  Map<String,dynamic>? hourly;
+  Map<String, dynamic>? daily;
+  Map<String, dynamic>? hourly;
 
   @override
   void initState() {
     super.initState();
     _loadWeather("Dhaka");
   }
-
-
-
-  Future<Map<String, dynamic>?> _getLongLat(String city) async {
-    Uri url = Uri.parse(
-      "https://geocoding-api.open-meteo.com/v1/search?name=$city&count=1&language=en&format=json",
-    );
-
-    try {
-      var res = await http.get(url);
-      if (res.statusCode == 200) {
-        var decoded = jsonDecode(res.body);
-        if (decoded["results"] != null && decoded["results"].isNotEmpty) {
-          return decoded["results"][0];
-        }
-      }
-    } catch (e) {
-      print("Location fetch error: $e");
-    }
-    return null;
-  }
-
-  Future<void> _getForecast(double lat, double lon) async {
-    Uri url = Uri.parse(
-      "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=temperature_2m,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=10&timezone=Asia%2FDhaka",
-    );
-
-    try {
-      setState(() {
-        loading = true;
-      });
-      var res = await http.get(url);
-      if (res.statusCode == 200) {
-        var decoded = jsonDecode(res.body);
-
-        setState(() {
-          forecast = decoded["current"];
-          daily = decoded["daily"];
-          hourly = decoded["hourly"];
-        });
-      }
-    } catch (e) {
-      print("Forecast fetch error: $e");
-    } finally {
-      setState(() {
-        loading = false;
-      });
-    }
-  }
-
   Future<void> _loadWeather(String city) async {
-    var loc = await _getLongLat(city);
+    var loc = await WetherController.getLongLat(city);
     if (loc != null) {
       location = loc;
-      await _getForecast(loc["latitude"], loc["longitude"]);
-      setState(() {});
+      var data = await WetherController.getForecast(loc["latitude"], loc["longitude"]);
+      setState(() {
+        forecast = data?["forecast"];
+        daily = data?["daily"];
+        hourly = data?["hourly"];
+      });
     }
   }
 
@@ -116,7 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return DateFormat('EEE').format(dt); // Sun, Mon, Tue...
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView(
             padding: EdgeInsets.symmetric(horizontal: 16),
             children: [
-              SizedBox(height: 20,),
+              SizedBox(height: 20),
               Row(
                 spacing: 5,
                 children: [
@@ -208,9 +162,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               width: 40,
                               height: 40,
-                              child: Icon(getWeatherIcon(code), color: Colors.yellow),
+                              child: Icon(
+                                getWeatherIcon(code),
+                                color: Colors.yellow,
+                              ),
                             ),
-                            Text(formatHour(time), style: Theme.of(context).textTheme.bodySmall),
+                            Text(
+                              formatHour(time),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -221,7 +181,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Icon(Icons.circle_outlined, size: 8, color: Colors.white),
+                                Icon(
+                                  Icons.circle_outlined,
+                                  size: 8,
+                                  color: Colors.white,
+                                ),
                               ],
                             ),
                           ],
@@ -234,10 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.only(left: 10),
-                child: Text(
-                  "10 Days Forecast",
-          
-                ),
+                child: Text("10 Days Forecast"),
               ),
               SizedBox(height: 10),
               BlurBg(
@@ -250,7 +211,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     final max = daily!['temperature_2m_max'][index];
                     final min = daily!['temperature_2m_min'][index];
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: 10,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -267,15 +231,29 @@ class _HomeScreenState extends State<HomeScreen> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(max.toStringAsFixed(0), style: TextStyle(fontSize: 14)),
-                              Icon(Icons.circle_outlined, size: 8, color: Colors.white),
+                              Text(
+                                max.toStringAsFixed(0),
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              Icon(
+                                Icons.circle_outlined,
+                                size: 8,
+                                color: Colors.white,
+                              ),
                             ],
                           ),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(min.toStringAsFixed(0), style: TextStyle(fontSize: 14)),
-                              Icon(Icons.circle_outlined, size: 8, color: Colors.white),
+                              Text(
+                                min.toStringAsFixed(0),
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              Icon(
+                                Icons.circle_outlined,
+                                size: 8,
+                                color: Colors.white,
+                              ),
                             ],
                           ),
                         ],

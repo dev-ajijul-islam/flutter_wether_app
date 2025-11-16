@@ -6,7 +6,7 @@ class TodaysWether extends StatelessWidget {
   final String? sunrise;
   final String? sunset;
 
-  TodaysWether({super.key, required this.forecast, this.sunrise, this.sunset});
+    TodaysWether({super.key, required this.forecast, this.sunrise, this.sunset});
 
   // Weather code mapping
   Map<int, Map<String, dynamic>> weatherMap = const {
@@ -28,10 +28,10 @@ class TodaysWether extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Parse API time and convert to Dhaka timezone (UTC+6)
+
     DateTime utcTime = DateTime.parse(
       forecast?["time"] ?? DateTime.now().toUtc().toIso8601String(),
-    ).toLocal().add(const Duration(hours: 6)); // Dhaka timezone
+    ).toLocal();
 
     String formattedDate = DateFormat("MMM d, hh:mm a").format(utcTime);
 
@@ -68,7 +68,7 @@ class TodaysWether extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Text(tempDisplay, style: const TextStyle(fontSize: 100)),
+                Text( tempDisplay, style: const TextStyle(fontSize: 100)),
                 const Positioned(
                   top: 20,
                   right: -40,
